@@ -1,6 +1,7 @@
 #ifndef KALMAN_FILTER_H_
 #define KALMAN_FILTER_H_
 #include "Eigen/Dense"
+#include <math.h>
 
 class KalmanFilter {
 public:
@@ -20,33 +21,38 @@ public:
   // measurement matrix
   Eigen::MatrixXd H_;
 
-  // measurement covariance matrix
-  Eigen::MatrixXd R_;
+	Eigen::VectorXd hj_; 
 
-  /**
-   * Constructor
-   */
+	Eigen::MatrixXd Hj_; 
+
+  // measurement covariance matrices
+	Eigen::MatrixXd R_laser_;
+  Eigen::MatrixXd R_radar_;
+
+	// Identity Matrix
+	Eigen::MatrixXd I; 
+
+  /**   * Constructor    */
   KalmanFilter();
 
-  /**
-   * Destructor
-   */
+  /** * Destructor   */
   virtual ~KalmanFilter();
 
-  /**
-   * Init Initializes Kalman filter
-   * @param x_in Initial state
-   * @param P_in Initial state covariance
-   * @param F_in Transition matrix
-   * @param H_in Measurement matrix
-   * @param R_in Measurement covariance matrix
-   * @param Q_in Process covariance matrix
-   */
-  void Init(Eigen::VectorXd &x_in, Eigen::MatrixXd &P_in, Eigen::MatrixXd &F_in,
-      Eigen::MatrixXd &H_in, Eigen::MatrixXd &R_in, Eigen::MatrixXd &Q_in);
+	// Update state Transition function with new delta t
+	void Update_F(float dt); 
+
+	// Update Process Noise with new delta t
+	void Update_Q(float dt);
+
+	// calc new h(x')-> hj to polar coordinates given current new state vectors
+	void update_hj();
+
+	// Calculates Jacobian Matrix from current state vector
+	void CalculateJacobian();
+
 
   /**
-   * Prediction Predicts the state and the state covariance
+   * Prediction: Predicts the state and the state covariance
    * using the process model
    * @param delta_T Time between k and k+1 in s
    */
@@ -64,6 +70,12 @@ public:
    */
   void UpdateEKF(const Eigen::VectorXd &z);
 
+
+	// converts Radar measurements from polar to Cartesian Coordinatess
+	void update_x_polar_to_Cart(const Eigen::VectorXd z_in);
 };
 
+
 #endif /* KALMAN_FILTER_H_ */
+
+
